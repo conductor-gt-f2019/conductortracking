@@ -46,7 +46,7 @@ color: #FF9900;
 
 <!--One or two sentences on the motivation behind the problem you are solving. One or two sentences describing the approach you took. One or two sentences on the main result you obtained.-->
 
-Musicians use some kind of synchronization mechanism to keep up with a song. This can be to synchronise other artists or with the timing. Conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. In order for a machine or a robot to interact with a human player or an orchestra, they need a way to understand a conductor's cues in real-time. One such cue that needs to be understood is the time signature of the piece. We propose to take a subset of time signatures — namely 2/4, 3/4, 4/4, 5/4, 7/8 — and classify these time signatures from a video stream of a conductor performing in real-time.  
+In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of the sound. These visual ques are nothing but various hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denoe different time signatures. We propose to take a subset of commonly used time signatures — 2/4, 3/4, 4/4, 5/4, 7/8 — and classify them in a video stream of a conductor performing in real-time.  
 
 <br><br>
 <!-- figure -->
@@ -70,14 +70,34 @@ Motivation behind the problem you are solving, what applications it has, any bri
 <br><br>
 <!-- Approach -->
 <h3>Approach</h3>
-Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach.
+<!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
+
+
+
+
+
+
+
+
+
 
 <br><br>
 <!-- Results -->
 <h3>Experiments and results</h3>
-Provide details about the experimental set up (number of images/videos, number of datasets you experimented with, train/test split if you used machine learning algorithms, etc.). Describe the evaluation metrics you used to evaluate how well your approach is working. Include clear figures and tables, as well as illustrative qualitative examples if appropriate. Be sure to include obvious baselines to see if your approach is doing better than a naive approach (e.g. for classification accuracy, how well would a classifier do that made random decisions?). Also discuss any parameters of your algorithms, and tell us how you set the values of those parameters. You can also show us how the performance varies as you change those parameter values. Be sure to discuss any trends you see in your results, and explain why these trends make sense. Are the results as expected? Why?
+<!-- Provide details about the experimental set up (number of images/videos, number of datasets you experimented with, train/test split if you used machine learning algorithms, etc.). Describe the evaluation metrics you used to evaluate how well your approach is working. Include clear figures and tables, as well as illustrative qualitative examples if appropriate. Be sure to include obvious baselines to see if your approach is doing better than a naive approach (e.g. for classification accuracy, how well would a classifier do that made random decisions?). Also discuss any parameters of your algorithms, and tell us how you set the values of those parameters. You can also show us how the performance varies as you change those parameter values. Be sure to discuss any trends you see in your results, and explain why these trends make sense. Are the results as expected? Why? -->
 
-<br><br>
+
+Data Collection and Preprocessing:
+
+For training, we need video recordings of conductors performing the subset of gestures that we plan to use. For each gesture in the subset we need multiple instances from multiple conductors. We plan to collect this data by recording ourselves performing each gesture over and over. For each gesture we would have a long video of repeated actions. We will use OpenPose [--------CITE-------] to extract the skeletal image information for the video. This will help us to detect the hand motion in the form of a point. For the whole video, we'd get the time series data of coordinates of the point that tracks the hand.
+
+We'd divide this series of data into blocks of a certain size. This size will have to be such that it encompasses atleast one complete iteration of the gesture being performed. The challenge here is to decide on a block length. Time signature is independent of tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will  need more time for the gesture to complete, so if we take teh block size large enough to account for the lowest tempo we should be fine.
+
+Once we have blocked the data, we will create an accumulator matrix like representation for the motion that is traced by the point in each block. This accumulator matrix image will be fed to the CNN as input. This is the pattern the we want our network to learn and detect.
+
+
+
+
 
 <!-- Main Results Figure --> 
 <!--
