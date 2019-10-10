@@ -80,7 +80,7 @@ We intend to use a data driven approach to solve the problem. This is because mo
 <!-- Provide details about the experimental set up (number of images/videos, number of datasets you experimented with, train/test split if you used machine learning algorithms, etc.). Describe the evaluation metrics you used to evaluate how well your approach is working. Include clear figures and tables, as well as illustrative qualitative examples if appropriate. Be sure to include obvious baselines to see if your approach is doing better than a naive approach (e.g. for classification accuracy, how well would a classifier do that made random decisions?). Also discuss any parameters of your algorithms, and tell us how you set the values of those parameters. You can also show us how the performance varies as you change those parameter values. Be sure to discuss any trends you see in your results, and explain why these trends make sense. Are the results as expected? Why? -->
 
 <h4>Data Collection</h4>
-As mentioned in the earlier sections, we plan to use a subset of common time signatures — 2/4, 3/4, 4/4, 5/4, 7/8. These are the class prediction outputs of the neural network model. For training, we need video recordings of conductors performing these time signature gestures. For each gesture in the subset we need multiple instances from various conductors. We plan to collect this data by recording ourselves performing each gesture over and over. For each gesture we would have a long video of repeated actions — continuously performing the gestures in a loop over a metronome.
+As mentioned in the earlier sections, we plan to use a subset of common time signatures — 2/4, 3/4, 4/4, 5/4, 7/8. These are the class prediction outputs of the neural network model. For training, we need video recordings of conductors performing these time signature gestures. For each gesture in the subset we need multiple instances from various conductors. There are no publically available datasets for this task, so we plan to collect the dataset by ourselves. We plan to collect this data by recording ourselves performing each gesture over and over. For each gesture we would have a long video of repeated actions — continuously performing the gestures in a loop over a metronome.
 <br><br>
 
 <h4>Preprocessing</h4>
@@ -91,7 +91,7 @@ Once we have blocked the data, we will create an accumulator matrix like represe
 
 <h4>Training & Experiments:</h4>
 
-We would be using a multi-layer deep CNN model for the problem. As the input dimension is a constant, we would be using fully connected layers towards the end with a softmax outputting the class probabilities. We plan to use regularization methods like dropouts and batch-normalizations to reduce over fitting and also to help improve sparsity. As mentioned in the aproach section, Experiments need to be done to see which aproach works best to detect "No-time-signature".
+We would be using a multi-layer deep CNN model for the problem. As the input dimension is a constant, we would be using fully connected layers towards the end with a softmax outputting the class probabilities. We plan to use regularization methods like dropouts and batch-normalizations to reduce over fitting and also to help improve sparsity. As mentioned in the aproach section, Experiments need to be done to see which aproach works best to detect "No-time-signature". We are also looking into using Recurrent layers such as LSTMs to model temporal coherence. We believe this would improve the classification accuracy.
 
 <br><br>
 
