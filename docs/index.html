@@ -71,14 +71,7 @@ Motivation behind the problem you are solving, what applications it has, any bri
 <!-- Approach -->
 <h3>Approach</h3>
 <!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
-
-
-
-
-
-
-
-
+We intend to use a data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We plan to train a convolutional neural network model with accumulator matrices which embed the movement patterns. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time. The wrist points are detected using CMU's openpose algorithm. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network is trained to classify these patterns and predict the time signature. Added to that, we plan to experiment with 2 approaches for the No-time-signature class. This is when the conductor either is not performing or is performing a piece that is not time synced (ex: rubato, improvisation). One approach is to have a seperate class and training the model with random patterns that are not part of other classes used. The second approach is to just have the time signature classes and to set a threshold of confidence to detect "no-class" 
 
 
 <br><br>
