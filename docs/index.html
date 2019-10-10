@@ -71,7 +71,7 @@ Motivation behind the problem you are solving, what applications it has, any bri
 <!-- Approach -->
 <h3>Approach</h3>
 <!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
-We intend to use a data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We plan to train a convolutional neural network (CNN) model with accumulator matrices which embed the movement patterns. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [2]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature. Further, we plan to experiment with two approaches for the "No-time-signature" class. This is when the conductor either is not performing or is performing a piece that is not time synced (ex: rubato, improvisation). One approach is to have a seperate class and training the model with random patterns that are not part of other classes used. The second approach is to just have the time signature classes and to set a threshold of confidence to detect "No-time-signature" class.
+We intend to use a data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We plan to train a convolutional neural network (CNN) model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [2]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature. Further, we plan to experiment with two approaches for the "No-time-signature" class. This is when the conductor either is not performing or is performing a piece that is not time synced (ex: rubato, improvisation). One approach is to have a seperate class and training the model with random patterns that are not part of other classes used. The second approach is to just have the time signature classes and to set a threshold of confidence to detect "No-time-signature" class.
 
 
 <br><br>
@@ -81,19 +81,25 @@ We intend to use a data driven approach to solve the problem. This is because mo
 
 <h4>Data Collection</h4>
 As mentioned in the earlier sections, we plan to use a subset of common time signatures — 2/4, 3/4, 4/4, 5/4, 7/8. These are the class prediction outputs of the neural network model. For training, we need video recordings of conductors performing these time signature gestures. For each gesture in the subset we need multiple instances from various conductors. There are no publically available datasets for this task, so we plan to collect the dataset by ourselves. We plan to collect this data by recording ourselves performing each gesture over and over. For each gesture we would have a long video of repeated actions — continuously performing the gestures in a loop over a metronome.
-<br><br>
+<br>
 
 <h4>Preprocessing</h4>
 We will use OpenPose to extract the skeletal points information for each frame in the video. This will help us to detect the wrist motion. For the whole video, we'd get the time series data of coordinates of the point that tracks the wrist. <br>
 We'll divide this series of data into blocks of a certain size. This size will have to be such that it encompasses atleast one complete iteration of the gesture being performed. This is a hyperparameter and we will tune it during training and validation. Time signature is independent of the tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will need more time to complete one full cycle of the gesture, so if we take the block size large enough to account for the lowest tempo we should be fine to start with.<br>
-Once we have blocked the data, we will create an accumulator matrix like representation for the motion that is traced by the point in each block. This matrix will have the same width and height as that of the video. For each block, we iterate through it's frames and get the 2d coordinate of the wrist point with openpose. The matrix at this coordinate index is upvoted. Thus we compute one matrix for each block. These matrices will inherit the patterns of the gestures. This accumulator matrix as an image will be batched and input to the CNN. This is the pattern that we want our network to learn and classify.
-<br><br>
+Once we have blocked the data, we will create an accumulator matrix like representation for the motion that is traced by the point in each block. This matrix will have the same width and height as that of the video. For each block, we iterate through it's frames and get the 2d coordinate of the wrist point with openpose. The matrix at this coordinate index is upvoted. Thus we compute one matrix for each block. These matrices will inherit the patterns from the gestures. This accumulator matrix as an image will be batched and input to the CNN. This is the gesture that we want our network to learn and classify.
+<br>
 
 <h4>Training & Experiments:</h4>
 
-We would be using a multi-layer deep CNN model for the problem. As the input dimension is a constant, we would be using fully connected layers towards the end with a softmax outputting the class probabilities. We plan to use regularization methods like dropouts and batch-normalizations to reduce over fitting and also to help improve sparsity. As mentioned in the aproach section, Experiments need to be done to see which aproach works best to detect "No-time-signature". We are also looking into using Recurrent layers such as LSTMs to model temporal coherence. We believe this would improve the classification accuracy.
+We would be using a multi-layer deep CNN model for the problem. As the input dimension is a constant, we would be using fully connected layers towards the end with a softmax outputting the class probabilities.. We are also looking into using Recurrent layers such as LSTMs to model temporal coherence. We believe this would improve the classification accuracy.
 
-<br><br>
+Since this is a classification problem, we will use negative log likelihood as the loss function. For optimization, we plan to experiment with regularization methods like dropouts and batch-normalizations to reduce over fitting and also to help improve sparsity. 
+
+As mentioned in the approach section, experiments need to be done to see which of the two approachs work best to detect "No-time-signature".
+
+
+We will experiment with different block sizes for segmenting the input data. We have assumed that we need atleast one complete iteration of the gesture in a block. We will test this assumption by using smaller blocks that don't cover a full cycle of the time signature gesture.
+<br>
 
 
 <!-- Main Results Figure --> 
