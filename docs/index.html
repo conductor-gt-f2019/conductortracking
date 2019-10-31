@@ -124,6 +124,11 @@ Reexamining 2/4 and 3/4 time signatures with a bounding box, we can see that bot
 There are some weaknesses to this approach. Some threshold parameters have to be manually tuned in order to define what counts as "moving slowly near a corner". The algorithm also does not produce accurate detection until it has time to define a bounding box. We can see this being a problem if the conductor changes their stance to face a different part of the orchestra. In other words, it can be difficult to track the gesture if the camera isn't facing the conductor head-on. Also, this method can be limited by the framerate of the camera. Fast-paced music requires a conductor to move their hands quickly, and if the camera can't keep up with that, the algorithm does not detect the change in speed and angle accurately. We are still working on detection for a 4/4 time signature, and we are working on testing the algorithm on a larger set of data to gain empirical results on its accuracy.
 <br><br>
 The source code for the algorithm can be found at <a href="https://github.com/conductor-gt-f2019/OpenPoseTest">https://github.com/conductor-gt-f2019/OpenPoseTest</a>
+<div style="display: flex; justify-content: center;">
+  <video controls width="480">
+    <source src="34_sample.mp4" type="video/mp4">
+  </video>
+</div>
 
 
 <!-- Main Results Figure --> 
