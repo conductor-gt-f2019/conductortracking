@@ -84,13 +84,32 @@ One approach is to classify all these other or no gestures as a "Other" class. T
 <!-- Provide details about the experimental set up (number of images/videos, number of datasets you experimented with, train/test split if you used machine learning algorithms, etc.). Describe the evaluation metrics you used to evaluate how well your approach is working. Include clear figures and tables, as well as illustrative qualitative examples if appropriate. Be sure to include obvious baselines to see if your approach is doing better than a naive approach (e.g. for classification accuracy, how well would a classifier do that made random decisions?). Also discuss any parameters of your algorithms, and tell us how you set the values of those parameters. You can also show us how the performance varies as you change those parameter values. Be sure to discuss any trends you see in your results, and explain why these trends make sense. Are the results as expected? Why? -->
 
 <h4>Data Collection</h4>
-As mentioned in the earlier sections, we plan to use a subset of common time signatures — 2/4, 3/4, 4/4, 5/4, 7/8. These are the class prediction outputs of the neural network model. For training, we need video recordings of conductors performing these time signature gestures. For each gesture in the subset we need multiple instances from various conductors. There are no publically available datasets for this task, so we plan to collect the dataset by ourselves. We plan to collect this data by recording ourselves performing each gesture over and over. For each gesture we would have a long video of repeated actions — continuously performing the gestures in a loop over a metronome.
+
+For data collection we have used videos from Youtube of multiple people conducting basic time signatures lie 2/4, 3/4, and 4/4. We have used OpenPose to extract the skeletal points information for each frame in the videos. For each video we have extracted the stream of coordinates corresponding to the wrists of both hands using OpenPose. These coordinates are saved as csv files. If needed, we may later add more data by recording ourselves performing the gestures.
+
 <br>
 <br>
 <h4>Preprocessing</h4>
-We will use OpenPose to extract the skeletal points information for each frame in the video. This will help us to detect the wrist motion. For the whole video, we'd get the time series data of coordinates of the point that tracks the wrist. <br><br>
-We'll divide this series of data into blocks of a certain size. This size will have to be such that it encompasses atleast one complete iteration of the gesture being performed. This is a hyperparameter and we will tune it during training and validation. Time signature is independent of the tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will need more time to complete one full cycle of the gesture, so if we take the block size large enough to account for the lowest tempo we should be fine to start with.<br><br>
-Once we have blocked the data, we will create an accumulator matrix like representation for the motion that is traced by the point in each block. This matrix will have the same width and height as that of the video. For each block, we iterate through it's frames and get the 2d coordinate of the wrist point with openpose. The matrix at this coordinate index is upvoted. Thus we compute one matrix for each block. These matrices will inherit the patterns from the gestures. This accumulator matrix as an image will be batched and input to the CNN. This is the gesture that we want our network to learn and classify.
+
+For data preprocessing we have implemented functions to read the extracted coordinate csv files, clean them, create blocks and generate accumulated matrices from these blocks.<br>
+
+<h5>Data Cleaning:</h5>
+The data that we recieve from OpenPose is noisy. Sometimes OpenPose is not able to detect the wrists and so gives output as -1 for x and y coordinates. If the time for which the wrists are not detected is larger then we remove these coordinates. For smaller intervals we interpolate between the points.<br>
+
+<h5>Blocking:</h5>
+The data stream is then windowed and converted into smaller chunks or blocks. The block size and hop size for this process can be controlled. The block size has to be such that it encompasses atleast one complete iteration of the gesture being performed. This is a hyperparameter and we will tune it during training and validation. Time signature is independent of the tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will need more time to complete one full cycle of the gesture, so if we take the block size large enough to account for the lowest tempo we should be fine to start with. For visualization in the video below, we have used a blocksize of 100.<br>
+
+<h5>Creating Accumulator Matrices:</h5>
+Once we have blocked the data, we create an accumulator matrix like representation for the motion that is traced by the point in each block. The coordinates that we get from openPose are normalized so we can create an accumulator matrix of any size. For visualization purposes we use a size of 500x500. For training, depending on the approach different sizes can be used. For each block, for each point, the pixel of the accumulator matrix at this coordinate is upvoted (set to 255). We compute one matrix for each block. These matrices show the motion traced by the wrist. This accumulator matrix as an image will used as input to the network. This is the gesture that we want our network to learn and classify. The video below shows the generated accumulated matrices for all the csv files.
+
+
+
+<div style="display: flex; justify-content: center;">
+  <video controls width="480">
+    <source src="AccMatViz.mp4" type="video/mp4">
+  </video>
+</div>
+
 <br>
 <br>
 <h4>Training & Experiments:</h4>
