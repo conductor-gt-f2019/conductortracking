@@ -49,7 +49,10 @@ def create_accumulator_matrix(segment: pd.DataFrame, hand: str, m_size=(500, 500
     return acc
 
 def save_image(acc: np.ndarray, filepath: str):
-    cv2.imwrite(filepath, acc * 255)
+    three_channel = np.array([acc, acc, acc])
+    three_channel = three_channel.transpose(1, 2, 0)
+    three_channel = three_channel * 255
+    cv2.imwrite(filepath, three_channel)
 
 def saveTrainAndVal(filepath:str, filename:str, hand:str, timesignature: str):
     # filepath = "pose_data/data_both_hands_2-2_g.csv"

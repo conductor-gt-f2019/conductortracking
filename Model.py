@@ -2,6 +2,7 @@ from torch import nn as nn
 from torchvision import models
 import torch.nn.functional as F
 
+
 class CT_Model(nn.Module):
     def __init__(self, n_classes):
         super(CT_Model, self).__init__()
