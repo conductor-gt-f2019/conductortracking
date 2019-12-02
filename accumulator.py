@@ -22,29 +22,29 @@ def segment_data(filepath: str) -> List[pd.DataFrame]:
     return segments
 
 def create_accumulator_matrix(segment: pd.DataFrame, hand: str, m_size=(500, 500)) -> np.ndarray:
-    hand_x = 0 if hand == "left" else 2
-    hand_y = 1 if hand == "right" else 3
+    hand_x = "left_x" if hand == "left" else "right_x"
+    hand_y = "left_y" if hand == "left" else "right_y"
 
     # Remove points that are precisely at zero
-    segment = segment.loc[(segment.iloc[:, hand_x] != 0).values * (segment.iloc[:, hand_y] != 0).values, :]
+    seg = segment[(segment.loc[:, hand_x] != 0).values * (segment.loc[:, hand_y] != 0).values].copy()
 
     # Normalize segment data into the range of [0, 500]
-    y_min = segment.iloc[:, hand_y].min()
-    x_min = segment.iloc[:, hand_x].min()
-    segment.iloc[:, hand_y] = segment.iloc[:, hand_y] - y_min
-    segment.iloc[:, hand_x] = segment.iloc[:, hand_x] - x_min
+    y_min = seg.loc[:, hand_y].min()
+    x_min = seg.loc[:, hand_x].min()
+    seg.loc[:, hand_y] = seg[hand_y].apply(lambda v: v - y_min)
+    seg.loc[:, hand_x] = seg[hand_x].apply(lambda v: v - x_min)
 
-    y_max = segment.iloc[:, hand_y].max()
-    x_max = segment.iloc[:, hand_x].max()
-    segment.iloc[:, hand_y] = segment.iloc[:, hand_y] / y_max * (m_size[0] - 1)
-    segment.iloc[:, hand_x] = segment.iloc[:, hand_x] / x_max * (m_size[1] - 1)
+    y_max = seg.loc[:, hand_y].max()
+    x_max = seg.loc[:, hand_x].max()
+    seg.loc[:, hand_y] = seg[hand_y].apply(lambda v: v / y_max * (m_size[0] - 1))
+    seg.loc[:, hand_x] = seg[hand_x].apply(lambda v: v / x_max * (m_size[1] - 1))
 
     # Cast to int so points can be used ast array indices
-    int_segment = segment.astype('int32')
+    int_segment = seg.astype('int32')
 
     # Create accumulator matrix
     acc = np.zeros(m_size)
-    acc[int_segment.iloc[:, hand_y], int_segment.iloc[:, hand_x]] = 1
+    acc[int_segment.loc[:, hand_y], int_segment.loc[:, hand_x]] = 1
 
     return acc
 
@@ -66,7 +66,6 @@ def saveTrainAndVal(filepath:str, filename:str, hand:str, timesignature: str):
     # Prepare 75% of data for data folder
     # Prepare the remaining 25% for val folder
     ind75 = int(len(acc_matrices) * 0.75)
-    print(filename, len(acc_matrices), ind75, len(acc_matrices) - ind75)
     train_accs = acc_matrices[:ind75]
     val_accs = acc_matrices[ind75:]
 
