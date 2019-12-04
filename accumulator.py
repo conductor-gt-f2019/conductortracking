@@ -86,8 +86,11 @@ def saveTrainAndVal(filepath:str, filename:str, hand:str, timesignature: str):
 if __name__ == "__main__":    
     saveTrainAndVal("pose_data/data_both_hands_2-2_g.csv", "data_both_hands_2-2_g.csv", "right", "2_2")
     saveTrainAndVal("pose_data/data_both_hands_2-2_g.csv", "data_both_hands_2-2_g.csv", "left", "2_2")
-    saveTrainAndVal("pose_data/data_left_hand_3-4_g.csv", "data_left_hand_3-4_g.csv", "left", "3_4")
-    saveTrainAndVal("pose_data/data_right_hand_3-4_g.csv", "data_right_hand_3-4_g.csv", "right", "3_4")
+    # saveTrainAndVal("pose_data/data_left_hand_3-4_g.csv", "data_left_hand_3-4_g.csv", "left", "3_4")
+    # saveTrainAndVal("pose_data/data_right_hand_3-4_g.csv", "data_right_hand_3-4_g.csv", "right", "3_4")
     saveTrainAndVal("pose_data/data_left_hand_p1_4-4_g.csv", "data_left_hand_p1_4-4_g.csv", "left", "4_4")
     saveTrainAndVal("pose_data/data_left_hand_p2_4-4_g.csv", "data_left_hand_p2_4-4_g.csv", "left", "4_4")
     saveTrainAndVal("pose_data/data_right_hand_4-4_g.csv", "data_right_hand_4-4_g.csv", "right", "4_4")
+    saveTrainAndVal("pose_data/data_ragh_left_p1_3-4_g.csv", "data_ragh_left_p1_3-4_g.csv", "left", "3_4")
+    saveTrainAndVal("pose_data/data_ragh_right_3-4_g.csv", "data_ragh_right_3-4_g.csv", "right", "3_4")
+    saveTrainAndVal("pose_data/data_ragh_right_p2_3-4_g.csv", "data_ragh_right_p2_3-4_g.csv", "right", "3_4")
