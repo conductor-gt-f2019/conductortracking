@@ -47,11 +47,7 @@ color: #FF9900;
 
 <!--One or two sentences on the motivation behind the problem you are solving. One or two sentences describing the approach you took. One or two sentences on the main result you obtained.-->
 
-<<<<<<< HEAD
 In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of sound. These visual cues are analogous to hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denote different time signatures. We took a subset of commonly used time signatures (2/4, 3/4, 4/4) and classify them within a video stream of a conductor performing in real-time. With our method, we obtained an average accuracy of about 95.641% with the dataset that includes recording ourselves conducting and also conducting videos from youtube.
-=======
-In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of sound. These visual cues are analogous to hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denote different time signatures. We took a subset of commonly used time signatures (2/4, 3/4, 4/4) and classified them within a video stream of a conductor performing in real-time.  
->>>>>>> ed96b1b1ea6e10ebe2baa6cbbebb7c9c3282953e
 
 <br><br><br>
 <!-- figure -->
@@ -82,25 +78,27 @@ In our project, we present a novel method for automatically detecting three of t
 <h3>Approach</h3>
 <!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
 
-We used the data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We trained a ResNet18[2] model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [3]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
+We used the data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns due to noise. We trained a ResNet18 [2] model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [3]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
 
 
 <br><br><br>
 <!-- Results -->
 <h3>Experiments and Results</h3>
 <h5>Data Collection</h4>
-For each time signature, we recorded approximately 15 minutes of footage (480p, 30fps) of ourselves performing the corresponding gesture. We then used OpenPose[5] to extract the x and y coordinates of our wrists in each video.
+For each time signature, we recorded approximately 15 minutes of footage (480p, 30fps) of ourselves performing the corresponding gesture. We then used OpenPose [5] to extract the x and y coordinates of our wrists in each video.
 <br>
 
 <h5>Data Cleaning and blocking</h5>
 The data that we recieve from OpenPose is noisy. Sometimes OpenPose is not able to detect the wrists and so gives output as 0 for x and y coordinates. If the time for which the wrists are not detected is larger then we remove these coordinates. The data was then blocked into chunks to include 1 full cycle of the pattern. This ensures each accumulator matrix would have one full cycle of the gesture pattern.<br>
 
 <h5>Creating Accumulator Matrices</h5>
-Once we blocked the data, we created an accumulator matrix like representation for the motion that was traced by the point in each block. We then normalized the spread of the pose points in the accumulator matrix to a 500x500 matrix to reduce the effects of scale on classification. The normalized accumulator matrix was saved as a 500x500 pixel image to prepare it for use in our deep learning model. We computed one matrix for each block. The video below shows the generated accumulated matrices for all the csv files.
+Once we blocked the data, we created an accumulator matrix like representation for the motion that was traced by the point in each block. We then normalized the spread of the pose points in the accumulator matrix to a 500x500 matrix to reduce the effects of scale on classification. The normalized accumulator matrix was saved as a 500x500 pixel image to prepare it for use in our deep learning model. We computed one matrix for each block. The video below shows the generated accumulated matrices for all the csv files. A sample video of various accumulator matrices is shown in video 1.
 
 <h5>Additional Processing</h5>
 The conducting gestures can be performed with either hand, so we also saved a horizontally flipped copy of each accumulator matrix image.
+<br><br>
 
+<h6>video 1 Accumulator matrix visualization</h6>
 <div style="display: flex; justify-content: center;">
   <video controls width="480">
     <source src="AccMatViz.mp4" type="video/mp4">
@@ -117,10 +115,6 @@ As we did not have enough data to train a model from scratch, we used the transf
 <h5>Evaluation</h5>
 To evaluate the model performance, we used the Support Vector Machines as our baseline. We used scikit-learn's[4] implementation of SVM. With the default parameters, we obtained an overall accuracy of 83.6%. The prediction accuracy per class were 69.23%, 87.69%, 86.15% for 2/4, 3/4 and 4/4 respectively. The resnet model performed better with an overall accuracy of about 95.641%. The confusion matrix for the classification is show in Fig 1. The loss curve is shown in Fig 2. This curve trend suggests the model is not overfitting.
 <br><br>
-<div style="text-align: center;">
-<h6>Fig 2 Training and validation loss</h6>
-<img style="height: 480px;" alt="" src="loss_curve_plot.png">
-</div>
 
 <h6>Fig 1 Confusion Matrix for the resnet18 model</h6>
 <div style="display: flex; flex-direction: row;">
@@ -163,6 +157,11 @@ To evaluate the model performance, we used the Support Vector Machines as our ba
 </div>
 <br><br>
 
+<div style="text-align: center;">
+<h6>Fig 2 Training and validation loss</h6>
+<img style="height: 480px;" alt="" src="loss_curve_plot.png">
+</div>
+
 <h3>Qualitative results</h3>
 Here are examples of our model being used to predict gestures based on a time series of point data. It can be seen that the model classifies the data correctly in most cases. Some failure and fluctuations can be notices in the 2/4 demo video especially. This could be due to the pattern being in close proximity with that of the patterns in 3/4 and 4/4.
 <div style="display: flex; flex-direction: row; justify-content: center;">
@@ -190,9 +189,9 @@ Here are examples of our model being used to predict gestures based on a time se
 <h3>Conclusion and Future work</h3>
 In this project, we proposed an efficient technique to classify the most common time signatures (2/4, 3/4, 4/4) used in music. We trained a pre-trained resnet18 model to classify gestures using the accumulator matrix that were created from the x, y coordinates of the hand positions.
 <br><br>
-Our next step would be to include more time signatures such as the 5/4, 6/8, etc. We would also like to experiment more on the minimum required block size to successfully classify the gesture instead of using one cycle of pattern. The jittery output that we notice in ther video is because there is no temporal coherence between the predictions. We would include recurrent architectures that enable learning temporal data to reduce the jitteriness in prediction.
+Our next step would be to include more time signatures such as the 5/4, 6/8, etc. We would also like to experiment more on the minimum required block size to successfully classify the gesture instead of using one cycle of pattern. The jittery output that we notice in the video is because there is no temporal coherence between the predictions. We would include recurrent architectures that enable learning temporal data to reduce the jitteriness in prediction.
 <br><br>
-The proposed method can be applied to robotics where the robot musician have to synchronize to the human player. It can also be used as an educative tool to teach the art of conducting!
+The proposed method can be applied to robotics where the robot musicians have to synchronize to the human player. It can also be used as an educational tool to teach the art of conducting!
 <br><br>
 
 <h3>References</h3>
