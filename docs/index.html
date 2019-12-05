@@ -47,7 +47,7 @@ color: #FF9900;
 
 <!--One or two sentences on the motivation behind the problem you are solving. One or two sentences describing the approach you took. One or two sentences on the main result you obtained.-->
 
-In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of sound. These visual cues are analogous to hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denote different time signatures. We propose to take a subset of commonly used time signatures (e.g. 2/4, 3/4, 4/4, 5/4, 7/8) and classify them within a video stream of a conductor performing in real-time.  
+In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of sound. These visual cues are analogous to hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denote different time signatures. We took a subset of commonly used time signatures (2/4, 3/4, 4/4) and classify them within a video stream of a conductor performing in real-time. With our method, we obtained an average accuracy of about 95.641% with the dataset that includes recording ourselves conducting and also conducting videos from youtube.
 
 <br><br><br>
 <!-- figure -->
@@ -68,36 +68,37 @@ A figure that conveys the main idea behind the project or the main application b
 Motivation behind the problem you are solving, what applications it has, any brief background on the particular domain you are working in (if not regular RBG photographs), etc. If you are using a new way to solve an existing problem, briefly mention and describe the existing approaches and tell us how your approach is new.
 -->
 
+<h3>Introduction</h3>
+
+In our project, we present a novel method for automatically detecting three of the most common time signatures in musical conducting (2/4, 3/4, 4/4). Our method utilizes a series of Computer Vision capabilities, namely the OpenPose pose-estimation framework and a downstream image classifier which receives pose coordinates from the conductor's gestures as input. Our method detects the correct time signature gesture with high accuracy. In the following summary, we describe in detail our proposed method and present the results of our research experiments. Lastly, we suggest further research opportunities utilizing our method.
+
+
 <br><br><br>
 <!-- Approach -->
 <h3>Approach</h3>
 <!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
 
-We intend to use a data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We plan to train a convolutional neural network (CNN) model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [2]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
-
-In a real world scenario, the conductor may perform gestures which our model has not seen. For example, when the conductor is doing a gesture for rubato, legato, accelerando etc. It may also happen that the conductor is not performing at all. To account for these, we plan to experiment with two approaches:
-One approach is to classify all these other or no gestures as a "Other" class. The second approach is to set a threshold of confidence that all predicted class scores must cross to be detected as a gesture.
+We used the data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns due to noise. We trained a ResNet18 [2] model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [3]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
 
 
 <br><br><br>
 <!-- Results -->
-<h3>Experiments and results</h3>
-<h4>Data Collection</h4>
-<p>For each time signature, we recorded approximately 15 minutes of footage (480p, 30fps) of ourselves performing the corresponding gesture. We then used <a href="https://github.com/CMU-Perceptual-Computing-Lab/openpose">OpenPose</a> to extract the x and y coordinates of our wrists in each video.</p>
+<h3>Experiments and Results</h3>
+<h5>Data Collection</h4>
+For each time signature, we recorded approximately 15 minutes of footage (480p, 30fps) of ourselves performing the corresponding gesture. We then used OpenPose [5] to extract the x and y coordinates of our wrists in each video.
 <br>
 
-<h5>Data Cleaning:</h5>
-The data that we recieve from OpenPose is noisy. Sometimes OpenPose is not able to detect the wrists and so gives output as 0 for x and y coordinates. If the time for which the wrists are not detected is larger then we remove these coordinates.<br>
+<h5>Data Cleaning and blocking</h5>
+The data that we recieve from OpenPose is noisy. Sometimes OpenPose is not able to detect the wrists and so gives output as 0 for x and y coordinates. If the time for which the wrists are not detected is larger then we remove these coordinates. The data was then blocked into chunks to include 1 full cycle of the pattern. This ensures each accumulator matrix would have one full cycle of the gesture pattern.<br>
 
-<h5>Blocking:</h5>
-The data stream is then windowed and converted into smaller chunks or blocks. The block size and hop size for this process can be controlled. The block size has to be such that it encompasses atleast one complete iteration of the gesture being performed. This is a hyperparameter and we will tune it during training and validation. Time signature is independent of the tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will need more time to complete one full cycle of the gesture, so if we take the block size large enough to account for the lowest tempo we should be fine to start with. For visualization in the videos below, we have used a blocksize of 100.<br>
+<h5>Creating Accumulator Matrices</h5>
+Once we blocked the data, we created an accumulator matrix like representation for the motion that was traced by the point in each block. We then normalized the spread of the pose points in the accumulator matrix to a 500x500 matrix to reduce the effects of scale on classification. The normalized accumulator matrix was saved as a 500x500 pixel image to prepare it for use in our deep learning model. We computed one matrix for each block. The video below shows the generated accumulated matrices for all the csv files. A sample video of various accumulator matrices is shown in video 1.
 
-<h5>Creating Accumulator Matrices:</h5>
-Once we blocked the data, we created an accumulator matrix like representation for the motion that was traced by the point in each block. We then normalized the spread of the pose points in the accumulator matrix to a 500x500 matrix to reduce the effects of scale on classification. The normalized accumulator matrix was saved as a 500x500 pixel image to prepare it for use in our deep learning model. We computed one matrix for each block. The video below shows the generated accumulated matrices for all the csv files.
-
-<h5>Additional Processing:</h5>
+<h5>Additional Processing</h5>
 The conducting gestures can be performed with either hand, so we also saved a horizontally flipped copy of each accumulator matrix image.
+<br><br>
 
+<h6>video 1 Accumulator matrix visualization</h6>
 <div style="display: flex; justify-content: center;">
   <video controls width="480">
     <source src="AccMatViz.mp4" type="video/mp4">
@@ -106,59 +107,66 @@ The conducting gestures can be performed with either hand, so we also saved a ho
 
 <br>
 <br>
-<h4>Training & Experiments:</h4>
+<h5>Training</h5>
 
-We would be using a multi-layer deep CNN model for the problem. As the input dimension is a constant, we would be using fully connected layers towards the end with a softmax outputting the class probabilities.. We are also looking into using Recurrent layers such as LSTMs to model temporal coherence. We believe this would improve the classification accuracy.
-
-<br><br>
-Since this is a classification problem, we will use negative log likelihood as the loss function. For optimization, we plan to experiment with regularization methods like dropouts and batch-normalizations to reduce over fitting and also to help improve sparsity. 
-<br><br>
-As mentioned in the approach section, experiments need to be done to see which of the two approachs work best to detect "Other" class.
-<br><br>
-We will experiment with different block sizes for segmenting the input data. We have assumed that we need atleast one complete iteration of the gesture in a block. We will test this assumption by using smaller blocks that don't cover a full cycle of the time signature gesture.
+As we did not have enough data to train a model from scratch, we used the transfer learning technique to train a pretrained Resnet18. It was pretrained on the ImageNet dataset. We initialized and trained only the fully connected layer, retaining the convolutional layers from the pretrained model. Since this is a classification problem, we used the cross-entropy loss function. We used Adam for the optimization with a learning rate of 0.001. We also used a LRScheduler to step down the learning rate every 7 epochs by 0.1. We augemented the data by shifting and scaling the accumulator matrices randomly to reduce overfitting and to improve generality.
 <br><br>
 
-<h5>Current Experiments</h5>
-<!-- <h6>Algorithmic Approach to Gesture Detection</h6>
-For classifications problems being solved with CNN models, it is helpful to have an algorithmic approach as a frame of reference for success and accuracy. One idea that we had for classifying a conductor's gestures was to detect the "inflection points" of a conductor's hand motions. When a conductor moves their hands to coordinate the next beat, they quickly move their hands in a different angle and stop at a different location in space. The order of these stopping locations can be used to detect the time signature.
+<h5>Evaluation</h5>
+To evaluate the model performance, we used the Support Vector Machines as our baseline. We used scikit-learn's[4] implementation of SVM. With the default parameters, we obtained an overall accuracy of 83.6%. The prediction accuracy per class were 69.23%, 87.69%, 86.15% for 2/4, 3/4 and 4/4 respectively. The resnet model performed better with an overall accuracy of about 95.641%. The confusion matrix for the classification is show in Fig 1. The loss curve is shown in Fig 2. This curve trend suggests the model is not overfitting.
 <br><br>
-We started by creating a script that watches a person's hand motions for several frames. To conduct a certain time signature, a person must move their hands in a "loop" for each bar of music. This loop can be used to form a bounding box.
-<br><br>
-<div style="display: flex; justify-content: center;"><img style="height: 240px;" alt="" src="bounding_box.png"></div>
-<br>
-Reexamining 2/4 and 3/4 time signatures with a bounding box, we can see that both gestures basically involve moving one's hand to different corners of the bounding box. The motion of the hand will slow down as it approaches the corner, and so will the angle of the movement. This is an inflection point. By tracking these inflection points over time, we can pattern match our set of inflection points with the specific order of inflection points expected by each time signature. For a 2/4 time signature, the hand will move from the top-left, to the bottom-right, and then back to the top-left. For a 3/4 time signature, the hand will move from the top-left, bottom-left, bottom-right, and then back to the top-left. With all this in mind, we created a preliminary demonstration, shown below.
-<br><br>
-<div style="display: flex; justify-content: center;">
-  <video controls width="640">
-    <source src="detect_twofourthreefour.mp4" type="video/mp4">
-  </video>
+
+<h6>Fig 1 Confusion Matrix for the resnet18 model</h6>
+<div style="display: flex; flex-direction: row;">
+    <div>
+        <table border="1">
+            <thead>
+            <tr>
+            <th></th>
+            <th>2/4</th>
+            <th>3/4</th>
+            <th>4/4</th>
+            <th>Accuracy</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <th>2/4</th>
+            <td>118</td>
+            <td>10</td>
+            <td>20</td>
+            <td>0.907692</td>
+            </tr>
+            <tr>
+            <th>3/4</th>
+            <td>4</td>
+            <td>125</td>
+            <td>1</td>
+            <td>0.961538</td>
+            </tr>
+            <tr>
+            <th>4/4</th>
+            <td>0</td>
+            <td>0</td>
+            <td>130</td>
+            <td>1.000000</td>
+            </tr>
+            </tbody>
+            </table>
+    </div>
 </div>
 <br><br>
-There are some weaknesses to this approach. Some threshold parameters have to be manually tuned in order to define what counts as "moving slowly near a corner". The algorithm also does not produce accurate detection until it has time to define a bounding box. We can see this being a problem if the conductor changes their stance to face a different part of the orchestra. In other words, it can be difficult to track the gesture if the camera isn't facing the conductor head-on. Also, this method can be limited by the framerate of the camera. Fast-paced music requires a conductor to move their hands quickly, and if the camera can't keep up with that, the algorithm does not detect the change in speed and angle accurately. We are still working on detection for a 4/4 time signature, and we are working on testing the algorithm on a larger set of data to gain empirical results on its accuracy.
-<br><br>
-The source code for the algorithm can be found at <a href="https://github.com/conductor-gt-f2019/OpenPoseTest">https://github.com/conductor-gt-f2019/OpenPoseTest</a>
-<div style="display: flex; justify-content: center;">
-  <video controls width="480">
-    <source src="34_sample.mp4" type="video/mp4">
-  </video>
-</div> -->
-<h6>KNN</h6>
 
-
-<!-- Main Results Figure --> 
-<!--
 <div style="text-align: center;">
-<img style="height: 300px;" alt="" src="results.png">
+<h6>Fig 2 Training and validation loss</h6>
+<img style="height: 480px;" alt="" src="loss_curve_plot.png">
 </div>
-<br><br>
--->
 
-<!-- Results -->
 <h3>Qualitative results</h3>
-Here are examples of our model being used to predict gestures based on a time series of point data.
+Here are examples of our model being used to predict gestures based on a time series of point data. It can be seen that the model classifies the data correctly in most cases. Some failure and fluctuations can be notices in the 2/4 demo video especially. This could be due to the pattern being in close proximity with that of the patterns in 3/4 and 4/4.
 <div style="display: flex; flex-direction: row; justify-content: center;">
   <div style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
-    <h6>2-2 Time Signature</h6>
+    <h6>2-4 Time Signature</h6>
     <video controls width="400">
       <source src="demo_2-2.mp4" type="video/mp4">
     </video>
@@ -178,75 +186,25 @@ Here are examples of our model being used to predict gestures based on a time se
 </div>
 <br><br>
 
-
-<!-- Main Results Figure --> 
-
-<div style="display: flex; flex-direction: row;">
-    <div>
-      <table border="1">
-          <thead>
-              <tr>
-              <th>Gesture</th>
-              <th>Count</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr>
-              <td>2/4</td>
-              <td>238</td>
-              </tr>
-              <tr>
-              <td>3/4</td>
-              <td>200</td>
-              </tr>
-              <tr>
-              <td>4/4</td>
-              <td>130</td>
-              </tr>
-              </tbody>
-      </table>
-    </div>
-    <div>
-        <table border="1">
-            <thead>
-            <tr>
-            <th></th>
-            <th>2/4</th>
-            <th>3/4</th>
-            <th>4/4</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-            <th>2/4</th>
-            <td>238</td>
-            <td>0</td>
-            <td>0</td>
-            </tr>
-            <tr>
-            <td>3/4</td>
-            <td>0</td>
-            <td>200</td>
-            <td>0</td>
-            </tr>
-            <tr>
-            <td>4/4</td>
-            <td>0</td>
-            <td>0</td>
-            <td>130</td>
-            </tr>
-            </tbody>
-            </table>
-    </div>
-</div>
+<h3>Conclusion and Future work</h3>
+In this project, we proposed an efficient technique to classify the most common time signatures (2/4, 3/4, 4/4) used in music. We trained a pre-trained resnet18 model to classify gestures using the accumulator matrix that were created from the x, y coordinates of the hand positions.
+<br><br>
+Our next step would be to include more time signatures such as the 5/4, 6/8, etc. We would also like to experiment more on the minimum required block size to successfully classify the gesture instead of using one cycle of pattern. The jittery output that we notice in the video is because there is no temporal coherence between the predictions. We would include recurrent architectures that enable learning temporal data to reduce the jitteriness in prediction.
+<br><br>
+The proposed method can be applied to robotics where the robot musicians have to synchronize to the human player. It can also be used as an educational tool to teach the art of conducting!
 <br><br>
 
-<br>
 <h3>References</h3>
 <ol>
   <li>The Art of Conducting (Garden City, New York: Doubleday, 1959); English edition as The Conductor: His Artistry and Craftsmanship (London: G. Bell & Sons, 1961).</li>
+  
+  <li>He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</li>
 
  <li>Cao, Zhe, et al. "OpenPose: realtime multi-person 2D pose estimation using Part Affinity Fields." arXiv preprint arXiv:1812.08008 (2018).</li>
+ 
+ <li>API design for machine learning software: experiences from the scikit-learn project, Buitinck et al., 2013.</li>
+ 
+ <li>https://github.com/CMU-Perceptual-Computing-Lab/openpose</li>
 
 </ol>
 
