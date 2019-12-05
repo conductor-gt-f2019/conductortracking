@@ -70,7 +70,7 @@ Motivation behind the problem you are solving, what applications it has, any bri
 
 <h3>Introduction</h3>
 
-In our project, we present a novel method for automatically detecting three of the most common time signatures in musical conducting (e2/4, 3/4, 4/4). Our method utilizes a series of Computer Vision capabilities, namely the OpenPose pose-estimation framework and a downstream image classifier which receives pose coordinates from the conductor's gestures as input. Our method detects the correct time signature gesture with high accuracy. In the following summary, we describe in detail our proposed method and present the results of our research experiments. Lastly, we suggest further research opportunities utilizing our method.
+In our project, we present a novel method for automatically detecting three of the most common time signatures in musical conducting (2/4, 3/4, 4/4). Our method utilizes a series of Computer Vision capabilities, namely the OpenPose pose-estimation framework and a downstream image classifier which receives pose coordinates from the conductor's gestures as input. Our method detects the correct time signature gesture with high accuracy. In the following summary, we describe in detail our proposed method and present the results of our research experiments. Lastly, we suggest further research opportunities utilizing our method.
 
 
 <br><br><br>
@@ -79,9 +79,6 @@ In our project, we present a novel method for automatically detecting three of t
 <!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
 
 We used the data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We trained a ResNet18[2] model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [3]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
-
-In a real world scenario, the conductor may perform gestures which our model has not seen. For example, when the conductor is doing a gesture for rubato, legato, accelerando etc. It may also happen that the conductor is not performing at all. To account for these, we plan to experiment with two approaches:
-One approach is to classify all these other or no gestures as a "Other" class. The second approach is to set a threshold of confidence that all predicted class scores must cross to be detected as a gesture.
 
 
 <br><br><br>
