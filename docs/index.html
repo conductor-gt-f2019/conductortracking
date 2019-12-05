@@ -9,6 +9,7 @@
 
 <!-- Le styles -->  
   <link href="css/bootstrap.css" rel="stylesheet">
+  <link href="css/main.css" rel="stylesheet">
 <style>
 body {
 padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -81,28 +82,21 @@ One approach is to classify all these other or no gestures as a "Other" class. T
 <br><br><br>
 <!-- Results -->
 <h3>Experiments and results</h3>
-<!-- Provide details about the experimental set up (number of images/videos, number of datasets you experimented with, train/test split if you used machine learning algorithms, etc.). Describe the evaluation metrics you used to evaluate how well your approach is working. Include clear figures and tables, as well as illustrative qualitative examples if appropriate. Be sure to include obvious baselines to see if your approach is doing better than a naive approach (e.g. for classification accuracy, how well would a classifier do that made random decisions?). Also discuss any parameters of your algorithms, and tell us how you set the values of those parameters. You can also show us how the performance varies as you change those parameter values. Be sure to discuss any trends you see in your results, and explain why these trends make sense. Are the results as expected? Why? -->
-
 <h4>Data Collection</h4>
-
-For data collection we have used videos from Youtube of multiple people conducting basic time signatures lie 2/4, 3/4, and 4/4. We have used OpenPose to extract the skeletal points information for each frame in the videos. For each video we have extracted the stream of coordinates corresponding to the wrists of both hands using OpenPose. These coordinates are saved as csv files. If needed, we may later add more data by recording ourselves performing the gestures.
-
+<p>For each time signature, we recorded approximately 15 minutes of footage (480p, 30fps) of ourselves performing the corresponding gesture. We then used <a href="https://github.com/CMU-Perceptual-Computing-Lab/openpose">OpenPose</a> to extract the x and y coordinates of our wrists in each video.</p>
 <br>
-<br>
-<h4>Preprocessing</h4>
-
-For data preprocessing we have implemented functions to read the extracted coordinate csv files, clean them, create blocks and generate accumulated matrices from these blocks.<br>
 
 <h5>Data Cleaning:</h5>
-The data that we recieve from OpenPose is noisy. Sometimes OpenPose is not able to detect the wrists and so gives output as -1 for x and y coordinates. If the time for which the wrists are not detected is larger then we remove these coordinates. For smaller intervals we interpolate between the points.<br>
+The data that we recieve from OpenPose is noisy. Sometimes OpenPose is not able to detect the wrists and so gives output as 0 for x and y coordinates. If the time for which the wrists are not detected is larger then we remove these coordinates.<br>
 
 <h5>Blocking:</h5>
-The data stream is then windowed and converted into smaller chunks or blocks. The block size and hop size for this process can be controlled. The block size has to be such that it encompasses atleast one complete iteration of the gesture being performed. This is a hyperparameter and we will tune it during training and validation. Time signature is independent of the tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will need more time to complete one full cycle of the gesture, so if we take the block size large enough to account for the lowest tempo we should be fine to start with. For visualization in the video below, we have used a blocksize of 100.<br>
+The data stream is then windowed and converted into smaller chunks or blocks. The block size and hop size for this process can be controlled. The block size has to be such that it encompasses atleast one complete iteration of the gesture being performed. This is a hyperparameter and we will tune it during training and validation. Time signature is independent of the tempo and since music can be at various tempos, the amount of action captured in a block will vary with it. Music at lower tempo will need more time to complete one full cycle of the gesture, so if we take the block size large enough to account for the lowest tempo we should be fine to start with. For visualization in the videos below, we have used a blocksize of 100.<br>
 
 <h5>Creating Accumulator Matrices:</h5>
-Once we have blocked the data, we create an accumulator matrix like representation for the motion that is traced by the point in each block. The coordinates that we get from openPose are normalized so we can create an accumulator matrix of any size. For visualization purposes we use a size of 500x500. For training, depending on the approach different sizes can be used. For each block, for each point, the pixel of the accumulator matrix at this coordinate is upvoted (set to 255). We compute one matrix for each block. These matrices show the motion traced by the wrist. This accumulator matrix as an image will used as input to the network. This is the gesture that we want our network to learn and classify. The video below shows the generated accumulated matrices for all the csv files.
+Once we blocked the data, we created an accumulator matrix like representation for the motion that was traced by the point in each block. We then normalized the spread of the pose points in the accumulator matrix to a 500x500 matrix to reduce the effects of scale on classification. The normalized accumulator matrix was saved as a 500x500 pixel image to prepare it for use in our deep learning model. We computed one matrix for each block. The video below shows the generated accumulated matrices for all the csv files.
 
-
+<h5>Additional Processing:</h5>
+The conducting gestures can be performed with either hand, so we also saved a horizontally flipped copy of each accumulator matrix image.
 
 <div style="display: flex; justify-content: center;">
   <video controls width="480">
@@ -125,7 +119,7 @@ We will experiment with different block sizes for segmenting the input data. We 
 <br><br>
 
 <h5>Current Experiments</h5>
-<h6>Algorithmic Approach to Gesture Detection</h6>
+<!-- <h6>Algorithmic Approach to Gesture Detection</h6>
 For classifications problems being solved with CNN models, it is helpful to have an algorithmic approach as a frame of reference for success and accuracy. One idea that we had for classifying a conductor's gestures was to detect the "inflection points" of a conductor's hand motions. When a conductor moves their hands to coordinate the next beat, they quickly move their hands in a different angle and stop at a different location in space. The order of these stopping locations can be used to detect the time signature.
 <br><br>
 We started by creating a script that watches a person's hand motions for several frames. To conduct a certain time signature, a person must move their hands in a "loop" for each bar of music. This loop can be used to form a bounding box.
@@ -147,7 +141,8 @@ The source code for the algorithm can be found at <a href="https://github.com/co
   <video controls width="480">
     <source src="34_sample.mp4" type="video/mp4">
   </video>
-</div>
+</div> -->
+<h6>KNN</h6>
 
 
 <!-- Main Results Figure --> 
@@ -159,19 +154,93 @@ The source code for the algorithm can be found at <a href="https://github.com/co
 -->
 
 <!-- Results -->
-<!--
 <h3>Qualitative results</h3>
-Show several visual examples of inputs/outputs of your system (success cases and failures) that help us better understand your approach.
-<br><br>
--->
-
-<!-- Main Results Figure --> 
-<!--
-<div style="text-align: center;">
-<img style="height: 300px;" alt="" src="qual_results.png">
+Here are examples of our model being used to predict gestures based on a time series of point data.
+<div style="display: flex; flex-direction: row; justify-content: center;">
+  <div style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
+    <h6>2-2 Time Signature</h6>
+    <video controls width="400">
+      <source src="demo_2-2.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div style="display: flex; flex-direction: column; justify-content: center;">
+    <h6>3-4 Time Signature</h6>
+    <video controls width="400">
+      <source src="demo_3-4.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div style="display: flex; flex-direction: column; justify-content: center;">
+    <h6>4-4 Time Signature</h6>
+    <video controls width="400">
+      <source src="demo_4-4.mp4" type="video/mp4">
+    </video>
+  </div>
 </div>
 <br><br>
--->
+
+
+<!-- Main Results Figure --> 
+
+<div style="display: flex; flex-direction: row;">
+    <div>
+      <table border="1">
+          <thead>
+              <tr>
+              <th>Gesture</th>
+              <th>Count</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr>
+              <td>2/4</td>
+              <td>238</td>
+              </tr>
+              <tr>
+              <td>3/4</td>
+              <td>200</td>
+              </tr>
+              <tr>
+              <td>4/4</td>
+              <td>130</td>
+              </tr>
+              </tbody>
+      </table>
+    </div>
+    <div>
+        <table border="1">
+            <thead>
+            <tr>
+            <th></th>
+            <th>2/4</th>
+            <th>3/4</th>
+            <th>4/4</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <th>2/4</th>
+            <td>238</td>
+            <td>0</td>
+            <td>0</td>
+            </tr>
+            <tr>
+            <td>3/4</td>
+            <td>0</td>
+            <td>200</td>
+            <td>0</td>
+            </tr>
+            <tr>
+            <td>4/4</td>
+            <td>0</td>
+            <td>0</td>
+            <td>130</td>
+            </tr>
+            </tbody>
+            </table>
+    </div>
+</div>
+<br><br>
+
 <br>
 <h3>References</h3>
 <ol>
