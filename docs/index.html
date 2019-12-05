@@ -47,7 +47,7 @@ color: #FF9900;
 
 <!--One or two sentences on the motivation behind the problem you are solving. One or two sentences describing the approach you took. One or two sentences on the main result you obtained.-->
 
-In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of sound. These visual cues are analogous to hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denote different time signatures. We propose to take a subset of commonly used time signatures (e.g. 2/4, 3/4, 4/4, 5/4, 7/8) and classify them within a video stream of a conductor performing in real-time.  
+In music, conducting is the art of directing the simultaneous performance of several players or singers by the use of gesture [1]. A conductor provides visual cues which help the orchestra to play in time and provide information about the variations in dynamics of sound. These visual cues are analogous to hand gestures. In order for a machine or a robot to interact with a human player or with an orchestra, they need a way to understand a conductor's cues in real-time. One common cue that needs to be understood is the time signature of the piece. The time signature indicates the number of beats in each measure in a piece of music. Conductors use different gestures to denote different time signatures. We took a subset of commonly used time signatures (2/4, 3/4, 4/4) and classify them within a video stream of a conductor performing in real-time.  
 
 <br><br><br>
 <!-- figure -->
@@ -68,12 +68,17 @@ A figure that conveys the main idea behind the project or the main application b
 Motivation behind the problem you are solving, what applications it has, any brief background on the particular domain you are working in (if not regular RBG photographs), etc. If you are using a new way to solve an existing problem, briefly mention and describe the existing approaches and tell us how your approach is new.
 -->
 
+<h3>Introduction</h3>
+
+In our project, we present a novel method for automatically detecting three of the most common time signatures in musical conducting (e2/4, 3/4, 4/4). Our method utilizes a series of Computer Vision capabilities, namely the OpenPose pose-estimation framework and a downstream image classifier which receives pose coordinates from the conductor's gestures as input. Our method detects the correct time signature gesture with high accuracy. In the following summary, we describe in detail our proposed method and present the results of our research experiments. Lastly, we suggest further research opportunities utilizing our method.
+
+
 <br><br><br>
 <!-- Approach -->
 <h3>Approach</h3>
 <!-- Describe very clearly and systematically your approach to solve the problem. Tell us exactly what existing implementations you used to build your system. Tell us what obstacles you faced and how you addressed them. Justify any design choices or judgment calls you made in your approach. -->
 
-We intend to use a data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We plan to train a convolutional neural network (CNN) model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [2]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
+We used the data driven approach to solve the problem. This is because modelling the movement patterns mathematically is very difficult and won't be effective due to large variations in the patterns - noise. We trained a ResNet18[2] model with accumulator matrices which embed the movement patterns. Note that we will refer to a complete time-signature pattern as gesture in the future. The accumulator matrix is formed by using votes for each point in the matrix that correspond to the spacial movement of the wrist as captured by the images over time (this is discussed in detail in preprocessing). The wrist points are detected using CMU's openpose model [3]. We would also perform polynomial interpolation to fix discontinuity in detection of wrist points. The network will be trained to classify these patterns and predict the time signature.
 
 In a real world scenario, the conductor may perform gestures which our model has not seen. For example, when the conductor is doing a gesture for rubato, legato, accelerando etc. It may also happen that the conductor is not performing at all. To account for these, we plan to experiment with two approaches:
 One approach is to classify all these other or no gestures as a "Other" class. The second approach is to set a threshold of confidence that all predicted class scores must cross to be detected as a gesture.
@@ -108,17 +113,17 @@ The conducting gestures can be performed with either hand, so we also saved a ho
 <br>
 <h4>Training & Experiments:</h4>
 
-We would be using a multi-layer deep CNN model for the problem. As the input dimension is a constant, we would be using fully connected layers towards the end with a softmax outputting the class probabilities.. We are also looking into using Recurrent layers such as LSTMs to model temporal coherence. We believe this would improve the classification accuracy.
+As we did not have enough data to train a model from scratch, we used the transfer learning technique to train a pretrained Resnet18. It was pretrained on the ImageNet dataset. We initialized and trained only the fully connected layer, retaining the convolutional layers from the pretrained model. 
 
 <br><br>
-Since this is a classification problem, we will use negative log likelihood as the loss function. For optimization, we plan to experiment with regularization methods like dropouts and batch-normalizations to reduce over fitting and also to help improve sparsity. 
-<br><br>
-As mentioned in the approach section, experiments need to be done to see which of the two approachs work best to detect "Other" class.
+Since this is a classification problem, we used the cross-entropy loss function. We used Adam for the optimization with a learning rate of 0.001. We also used a LRScheduler to step down the learning rate every 7 epochs by 0.1
 <br><br>
 We will experiment with different block sizes for segmenting the input data. We have assumed that we need atleast one complete iteration of the gesture in a block. We will test this assumption by using smaller blocks that don't cover a full cycle of the time signature gesture.
 <br><br>
 
-<h5>Current Experiments</h5>
+<h3>Evaluation</h3>
+To evaluate the model performance, we used the Support Vector Machines as our baseline. We used scikit-learn's[4] implementation of SVM. With the default parameters, we obtained an overall accuracy of 83.6%. The prediction accuracy per class were 69.23%, 87.69%, 86.15% for 2/4, 3/4 and 4/4 respectively.
+
 <!-- <h6>Algorithmic Approach to Gesture Detection</h6>
 For classifications problems being solved with CNN models, it is helpful to have an algorithmic approach as a frame of reference for success and accuracy. One idea that we had for classifying a conductor's gestures was to detect the "inflection points" of a conductor's hand motions. When a conductor moves their hands to coordinate the next beat, they quickly move their hands in a different angle and stop at a different location in space. The order of these stopping locations can be used to detect the time signature.
 <br><br>
@@ -142,7 +147,6 @@ The source code for the algorithm can be found at <a href="https://github.com/co
     <source src="34_sample.mp4" type="video/mp4">
   </video>
 </div> -->
-<h6>KNN</h6>
 
 
 <!-- Main Results Figure --> 
@@ -153,12 +157,52 @@ The source code for the algorithm can be found at <a href="https://github.com/co
 <br><br>
 -->
 
-<!-- Results -->
+<h6>Confusion Matrix for the resnet18 model</h6>
+<div style="display: flex; flex-direction: row;">
+    <div>
+        <table border="1">
+            <thead>
+            <tr>
+            <th></th>
+            <th>2/4</th>
+            <th>3/4</th>
+            <th>4/4</th>
+            <th>Accuracy</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <th>2/4</th>
+            <td>118</td>
+            <td>10</td>
+            <td>20</td>
+            <td>0.907692</td>
+            </tr>
+            <tr>
+            <th>3/4</th>
+            <td>4</td>
+            <td>125</td>
+            <td>1</td>
+            <td>0.961538</td>
+            </tr>
+            <tr>
+            <th>4/4</th>
+            <td>0</td>
+            <td>0</td>
+            <td>130</td>
+            <td>1.000000</td>
+            </tr>
+            </tbody>
+            </table>
+    </div>
+</div>
+<br><br>
+
 <h3>Qualitative results</h3>
 Here are examples of our model being used to predict gestures based on a time series of point data.
 <div style="display: flex; flex-direction: row; justify-content: center;">
   <div style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
-    <h6>2-2 Time Signature</h6>
+    <h6>2-4 Time Signature</h6>
     <video controls width="400">
       <source src="demo_2-2.mp4" type="video/mp4">
     </video>
@@ -178,75 +222,16 @@ Here are examples of our model being used to predict gestures based on a time se
 </div>
 <br><br>
 
-
-<!-- Main Results Figure --> 
-
-<div style="display: flex; flex-direction: row;">
-    <div>
-      <table border="1">
-          <thead>
-              <tr>
-              <th>Gesture</th>
-              <th>Count</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr>
-              <td>2/4</td>
-              <td>238</td>
-              </tr>
-              <tr>
-              <td>3/4</td>
-              <td>200</td>
-              </tr>
-              <tr>
-              <td>4/4</td>
-              <td>130</td>
-              </tr>
-              </tbody>
-      </table>
-    </div>
-    <div>
-        <table border="1">
-            <thead>
-            <tr>
-            <th></th>
-            <th>2/4</th>
-            <th>3/4</th>
-            <th>4/4</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-            <th>2/4</th>
-            <td>238</td>
-            <td>0</td>
-            <td>0</td>
-            </tr>
-            <tr>
-            <td>3/4</td>
-            <td>0</td>
-            <td>200</td>
-            <td>0</td>
-            </tr>
-            <tr>
-            <td>4/4</td>
-            <td>0</td>
-            <td>0</td>
-            <td>130</td>
-            </tr>
-            </tbody>
-            </table>
-    </div>
-</div>
-<br><br>
-
 <br>
 <h3>References</h3>
 <ol>
   <li>The Art of Conducting (Garden City, New York: Doubleday, 1959); English edition as The Conductor: His Artistry and Craftsmanship (London: G. Bell & Sons, 1961).</li>
+  
+  <li>He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).</li>
 
  <li>Cao, Zhe, et al. "OpenPose: realtime multi-person 2D pose estimation using Part Affinity Fields." arXiv preprint arXiv:1812.08008 (2018).</li>
+ 
+ <li>API design for machine learning software: experiences from the scikit-learn project, Buitinck et al., 2013.</li>
 
 </ol>
 
